@@ -52,7 +52,7 @@
    ```
    唯一的运行时依赖是 [`wechatauto-replica`](https://pypi.org/project/wechatauto-replica/)（UI 驱动 + 库解密）。
 3. **配置**：`copy config.example.toml config.toml`，把 `admin_wxids`、`allow_contacts` 换成你自己的 wxid。
-4. **人格**：建 `%USERPROFILE%\wxbot_home`（或设环境变量 `WXBOT_HOME`），放一个 `PERSONA.md` 写人设，`notes/` 会自动生成。
+4. **人格**：建 `%USERPROFILE%\wxbot_home`（或设环境变量 `WXBOT_HOME`），把 `PERSONA.example.md` 复制成 `PERSONA.md` 再改（800–1400 字最合适），`notes/` 会自动生成。
 5. **启动**：
    ```bash
    .venv\Scripts\python.exe run_v4.py
@@ -80,6 +80,19 @@
 | `panel.py` | 本地 Web 面板 |
 | `wxrecover.py` / `wxui.py` | 界面的兜底恢复、UI 操作封装 |
 | `paths.py` | 统一路径（`WXBOT_HOME` 可覆盖） |
+| `PERSONA.example.md` | 人设模板，复制成 `PERSONA.md` 改掉占位内容即可 |
+| `actions.py` | `[[动作:…]]` 标记的解析与执行（发消息/戳一戳等） |
+| `runtime.py` | 运行时小工具（前台窗口、锁屏判断、进程守护） |
+| `config.py` | `config.toml` 读取与默认值 |
+| `store.py` | SQLite：联系人、消息、已读水位 |
+| `ask_ai.py` | 命令行小工具：开一个干净会话问事实（不聊天、不记上下文） |
+| `consolidate_notes.py` | 把历史消息一次性整理进笔记（首次补档用） |
+| `notes_catchup.py` | 按人/群补账：把还没整理的增量消息补进笔记 |
+| `sync_group_notes.py` | 群名变更后，把旧笔记迁到新群 id 下 |
+| `run_mock.py` | 假适配器跑全流程，调试提示词不用开微信 |
+| `curio_selftest.py` / `panel_selftest.py` | 好奇心与面板的自检脚本（改完跑一遍） |
+| `start_bridge.ps1` / `start_bridge_core.ps1` | 守护入口：单实例锁 + 缺进程才拉起 |
+| `wxctl.py` / `wxctl.cmd` | 命令行快捷操作：同意好友申请、拍一拍、发消息 |
 
 ## 已知限制
 
