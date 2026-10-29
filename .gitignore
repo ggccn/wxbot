@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# 运行时数据：聊天库、媒体、日志、表情包 —— 绝不入库
+data/
+media/
+logs/
+wechatauto_logs/
+stickers/
+*.db
+*.db-wal
+*.db-shm
+*.log
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.dmp
+*.zip
+
+# 个人配置与人设
+config.toml
+PERSONA.md
+notes/
+memes.md
+games.md
+*.bak
+
+# 调试脚本
+_t_*.py
+_pay*.py
+_p_*.py
+_dump*.py
+_merge*.py
+_pubfix.py
+_panel*.py
+_*.ps1
+_*.log
+_*.json
+
+# 系统
+Thumbs.db
+desktop.ini
+.DS_Store

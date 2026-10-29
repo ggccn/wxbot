@@ -1,0 +1,76 @@
+# 微信 AI 桥 · 示例配置
+# 复制成 config.toml 再改：cp config.example.toml config.toml
+# 改完保存后重启桥生效（或在微信里发 /reload）
+
+[identity]
+bot_name = "小鱼"               # 群里 @ 它用的昵称
+
+[reply]
+private = "auto"                # auto = 私聊都回 | prefix = 必须带前缀才回
+private_prefix = ""
+group = "smart"                 # smart = @它或明显在跟它说话才回 | at = 只回 @ | keyword | off
+group_keywords = ["小鱼", "小鲸鱼", "鲸鱼", "小助手"]
+max_chars = 800                 # 单条上限，超出自动分条
+ack_after_seconds = 0           # 0 = 不预发"我想一下"
+ack_text = "（收到，我想一下……）"
+group_at_sender = true
+
+[access]
+allow_groups = ["*"]
+deny_contacts = []
+deny_groups = []
+# 主人 wxid：能用 /stats /safety /reset 等命令，也不受免打扰限制
+# 查 wxid：
+#   python -c "from wechatauto.db import WeChatDB; db=WeChatDB(); [print(s['username'], s['summary'][:20]) for s in db.get_sessions(20)]"
+admin_wxids = ["wxid_你的主号"]
+
+[safety]
+# 这一层是主要的"保命"措施，别随手放松
+require_allowlist = true
+allow_friends = true
+allow_contacts = ["wxid_你的主号", "filehelper"]
+allow_groups = ["*"]
+daily_per_contact = 80
+daily_total = 300
+warmup_days = 14
+warmup_daily_total = 240
+warmup_daily_per_contact = 60
+min_gap_seconds = 0.0
+max_gap_seconds = 0.2
+per_char_seconds = 0.002
+max_reply_delay = 0.2
+repeat_window_seconds = 1800
+max_repeat = 2
+fail_streak_limit = 3
+cooldown_seconds = 1800
+blocked_reply = "这个话题我不太方便接，换个别的吧。"
+require_unlocked = true
+
+[rate_limit]
+per_contact_per_minute = 20
+per_contact_per_hour = 240
+global_per_minute = 90
+
+[quiet_hours]
+enabled = true
+start = "23:30"
+end = "08:00"
+
+[brain]
+# DSH 命令行；也可以在环境变量里设 DSH_CMD
+dsh_cmd = "dsh"
+profile = "headless"
+# 人格与记忆目录；也可以用环境变量 WXBOT_HOME 覆盖
+agent_home = "~/wxbot_home"
+timeout_seconds = 200
+max_workers = 5
+
+[media]
+fetch_original = true
+screenshot_fallback = false
+
+[backfill]
+enabled = true
+max_hours = 24
+max_per_chat = 40
+reply_max_age_minutes = 240
