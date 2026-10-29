@@ -1,14 +1,14 @@
 """本地小面板：改「连发 / 自动表情 / 定时主动 / 性格人设 / 节奏」。
 
 跑法（双击也行）：
-    E:\\dsk\\wxbot\\panel.cmd
+    <仓库>\\panel.cmd
 然后浏览器打开 http://127.0.0.1:8765
 
 面板只写这几个文件，桥按 mtime 热加载，改完一两分钟内生效：
     data\\behavior.json    连发 + 自动表情
     data\\proactive.json   定时主动（开关、每日上限、间隔、时间窗、条目）
     data\\settings.json    节奏档 natural/calm/fast
-    E:\\wxbot_home\\PERSONA.md   性格（人设正文）
+    <WXBOT_HOME>/PERSONA.md   性格（人设正文）
     stickers\\              表情库（抓新图会落盘到这里）
 """
 from __future__ import annotations
@@ -484,7 +484,7 @@ def _extra_cards() -> str:
   <p><label><input type="checkbox" name="curiosity_no_switch" value="1" {"checked" if bl2.get("curiosity_no_switch", True) else ""}> 禁止用「对了 / 话说 / 说起来 / 说真的」把话题拐走</label></p>
   <p class="muted">对话收尾追问：对方停下不说话后，她按概率问一句「想更了解你」的问题</p>
   <p><label><input type="checkbox" name="curiosity_ping_enabled" value="1" {"checked" if bl2.get("curiosity_ping_enabled") else ""}> 打开</label> 概率 <input name="curiosity_ping_chance" value="{bl2.get("curiosity_ping_chance", 0.3)}" size="4"> 停 <input name="curiosity_ping_after_minutes" value="{bl2.get("curiosity_ping_after_minutes", 1)}" size="3"> 分钟算结束 CD <input name="curiosity_ping_cooldown_minutes" value="{bl2.get("curiosity_ping_cooldown_minutes", 60)}" size="4"> 分钟</p>
-  <p><label><input type="checkbox" name="memes_enabled" value="1" {"checked" if bl2.get("memes_enabled") else ""}> 启用梗库（E:\\wxbot_home\\memes.md）</label></p>
+  <p><label><input type="checkbox" name="memes_enabled" value="1" {"checked" if bl2.get("memes_enabled") else ""}> 启用梗库（<WXBOT_HOME>\\memes.md）</label></p>
   <button>保存（立即生效）</button>
 </form></div>
 """
@@ -742,7 +742,7 @@ label.up input{{display:none}}
 <form method="post" action="/persona">
   <div class="card">
     <h2>性格 / 人设</h2>
-    <p class="hint">这就是她每句话都会照着演的那份人设（<code>E:\\wxbot_home\\PERSONA.md</code>）。
+    <p class="hint">这就是她每句话都会照着演的那份人设（<code><WXBOT_HOME>/PERSONA.md</code>）。
       保存后下一句就生效。改坏了可以清空——清空就退回 AGENTS.md 的默认风格。</p>
     <textarea name="persona">{html.escape(persona_text)}</textarea>
     <p class="hint">字数 {len(persona_text)}（建议 300~1500 字，太长会挤掉别的上下文）</p>
@@ -763,7 +763,7 @@ label.up input{{display:none}}
   </div>
 </form>
 
-<p class="muted" style="margin-top:18px">文件：data\\behavior.json · data\\proactive.json · data\\settings.json · E:\\wxbot_home\\PERSONA.md · E:\\wxbot_home\\memes.md</p>
+<p class="muted" style="margin-top:18px">文件：data\\behavior.json · data\\proactive.json · data\\settings.json · <WXBOT_HOME>/PERSONA.md · <WXBOT_HOME>\\memes.md</p>
 </div></body></html>""" + _extra_cards() + _JS
     return doc.encode("utf-8")
 

@@ -1,31 +1,35 @@
-# 启动与自启（2026-10-27 改版）
+# 启动方式备忘
 
-## 现在怎么启动
-双击桌面「大肥鱼」快捷方式（`C:\Users\ggcfn\Desktop\大肥鱼.lnk`，图标 `dafeiyu.ico`）。
+## 手动启动（默认）
 
-链路：`wscript.exe start_dafeiyu.vbs` → 微信没开就先起 `E:\wx\Weixin\Weixin.exe` → 等 20 秒
-→ `wscript.exe start_bridge_hidden.vbs` → `powershell -WindowStyle Hidden -File start_bridge_core.ps1`
-→ 起 panel.py(8765) + run_v4.py，最后用默认浏览器打开 http://127.0.0.1:8765 。
+双击一个 `.cmd` / 快捷方式即可，例如：
 
-## 现在开机什么都不启动
-- 计划任务 `\DSH-WeChatBridge`（登录触发）已删除（需要管理员权限那次删除已完成）。
-- 计划任务 `\DSH-WeChatBridge-Watchdog` 保留但**触发器已清空**，只剩手动运行：
-  `schtasks /run /tn DSH-WeChatBridge-Watchdog`（动作已改成 wscript 调 VBS，不会再闪黑窗）。
-- HKCU\...\Run 里的 `Weixin = "E:\wx\Weixin\Weixin.exe" -autorun` 已删除，
-  备份在 `data\_backup_weixin_autorun.json`。
-- 启动文件夹、其它 Run 键里没有本系统的条目。
-
-## 文件说明
-- `start_bridge.ps1` —— 现在只是个占位（`exit 0`），防止有残留引用一跑就起桥。
-- `start_bridge_core.ps1` —— 真正的守护循环（互斥体单实例 + panel + run_v4 + 崩溃 60 秒重试）。
-- `start_bridge_hidden.vbs` —— 用 wscript 隐藏启动 core，避免 Windows Terminal 闪窗。
-- `start_dafeiyu.vbs` —— 一键启动（微信 → 桥 → 面板 → 开浏览器）。
-
-## 为什么不能用 powershell 直接起
-Win11 默认终端是 Windows Terminal，`-WindowStyle Hidden` 对它无效，每次调用都会闪一个黑窗。
-必须经过 `wscript.exe` + `sh.Run(..., 0, False)` 才是真隐藏。
-
-## 恢复微信自启（如果需要）
+```bat
+@echo off
+cd /d "%~dp0"
+.venv\Scripts\python.exe run_v4.py
 ```
-Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name Weixin -Value '"E:\wx\Weixin\Weixin.exe" -autorun'
+
+启动后面板在 http://127.0.0.1:8765 ，微信里给机器人发消息就有反应。
+
+## 守护（可选）
+
+`start_bridge.ps1` → `start_bridge_core.ps1`：
+
+- 用命名互斥体保证只有一份 wrapper 在跑；
+- 桥或面板掉了才重新拉起；
+- 适合挂到「任务计划程序」里定时跑（例如每 5 分钟一次）。
+
+```powershell
+schtasks /create /tn wxbot-watchdog /sc minute /mo 5 ^
+  /tr "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File E:\path\to\start_bridge.ps1"
 ```
+
+## 停止
+
+- 微信里发 `/停`：只静音，进程还在（消息照收、不回复）；
+- 直接结束 `python.exe` 进程：彻底停。
+
+## 开机不自动启动的原因
+
+微信小号 + UI 自动化有封号风险，建议手动开、用完关，不要挂成后台常驻服务。

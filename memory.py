@@ -168,7 +168,7 @@ def compress(store, brain, key: str, name: str, state_path: Path,
 
     笔记只保留一套格式（## 档案 / ## 时间线，按日期追加）。原来这里会往文件末尾
     追加 `## 记忆整理 时间` 卡片，但 summarize_idle 走 append_new 是整篇重写，
-    两套格式会互相覆盖（YY 的笔记里就躺着两段重复卡片）。现在统一走增量路径。
+    两套格式会互相覆盖（旧笔记里就躺着两段重复卡片）。现在统一走增量路径。
     """
     grew = due(store, key, state_path, every)
     if not force and grew < every:

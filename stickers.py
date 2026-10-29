@@ -1,6 +1,6 @@
 """表情包库：本地存图 + 按标签挑 + 去网上找新的。
 
-目录：`E:\\dsk\\wxbot\\stickers\\<标签>\\xxx.png|gif|jpg`，索引在 `stickers\\index.json`。
+目录：`<仓库>/stickers\\<标签>\\xxx.png|gif|jpg`，索引在 `stickers\\index.json`。
 
 发送走 `gui.send_image(path, who)`（剪贴板粘贴，微信当图片消息发出去）。
 真正作为「微信表情」发出去要往表情面板里塞，那套没有稳定接口；发成图片是最接近的做法。

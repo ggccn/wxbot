@@ -1,6 +1,6 @@
 """人设（persona）：可被主人在微信里用命令改写，立即生效。
 
-人设文本存在 `E:\\wxbot_home\\PERSONA.md`，每次回复前读一次并注入提示词，
+人设文本存在 `<WXBOT_HOME>/PERSONA.md`，每次回复前读一次并注入提示词，
 所以改完下一句就生效，不用重启。
 """
 from __future__ import annotations

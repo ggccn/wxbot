@@ -179,7 +179,7 @@ def _read_games(limit: int = 700) -> str:
 def _with_clock(text: str) -> str:
     """给正文加一行「现在几点」，模型据此回答时间类问题。
 
-    2026-10-22 实测：headless 会话里的 shell 工具在 `E:\\wxbot_home` 上会报
+    2026-10-22 实测：headless 会话里的 shell 工具在 `<WXBOT_HOME>` 上会报
     `SetNamedSecurityInfoW failed (Win32 5): grantWrite(...)`，拿不到系统时间；
     把时间直接写进提示词最稳，也不依赖任何工具权限。
     """
@@ -599,7 +599,7 @@ class Bridge:
             return
         if msg.from_self:
             # 自己发的消息也会被补收捞回来：记上 seen，否则每分钟重放一遍，
-            # 每放一遍还会顺手发个表情（就是"一直抢鼠标去搜 YY"的元凶）。
+            # 每放一遍还会顺手发个表情（就是"一直抢鼠标去搜人"的元凶）。
             if msg.msgid:
                 self.store.mark_seen(msg.msgid)
             return
@@ -813,7 +813,7 @@ class Bridge:
             bconf = self._behavior_conf()
             gmode = bconf.get("group_mode") or r.group
             kws = list(bconf.get("group_keywords") or [])
-            for _n in [getattr(self.cfg, "bot_name", "")] + ['小鲸鱼', '大肥鱼', '大傻鱼', '肥鱼', '傻鱼', '鱼鱼']:
+            for _n in [getattr(self.cfg, "bot_name", "")] + ['小鲸鱼', '小鱼', '鲸鱼', '鱼鱼']:
                 if _n and _n not in kws:
                     kws.append(_n)
             hit_kw = _kw_hit(text, kws)
@@ -1276,7 +1276,7 @@ class Bridge:
             "桥会隔一两秒依次发出去，像真人打字。大部分时候一句就够，别每次都拆。]"
         )
         if self.stickers is not None:
-            # 表情库全是 DeepSeek娘（蓝发大肥鱼），跟头像同一个角色。
+            # 表情库是同一个角色的表情包，跟头像风格一致。
             out += ("\n[表情库：每个标签是一组同情绪的表情，选跟此刻气氛最贴的那一档，"
                     "单独写一行 [[表情:标签]]。\n"
                     "  · 开心/被逗到/想笑 → [[表情:开心]]\n"

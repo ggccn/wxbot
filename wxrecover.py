@@ -17,7 +17,26 @@ from paths import DATA_DIR
 log = logging.getLogger("wxrecover")
 
 MAIN_TITLE = "微信"
-WECHAT_EXE = r"E:\wx\Weixin\Weixin.exe"
+def _find_wechat() -> str:
+    """找微信主程序：环境变量 WECHAT_EXE 优先，其次常见安装位置。"""
+    import os
+    env = os.environ.get("WECHAT_EXE")
+    if env and os.path.exists(env):
+        return env
+    candidates = [
+        r"C:\Program Files\Tencent\Weixin\Weixin.exe",
+        r"C:\Program Files (x86)\Tencent\Weixin\Weixin.exe",
+        r"C:\Program Files\Tencent\WeChat\WeChat.exe",
+        r"D:\Program Files\Tencent\Weixin\Weixin.exe",
+        r"E:\wx\Weixin\Weixin.exe",
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return ""
+
+
+WECHAT_EXE = _find_wechat()
 _last_restart = 0.0
 _splash_warned = False
 _minimized_logged = False   # 最小化只提醒一次，别每分钟刷日志

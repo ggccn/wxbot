@@ -441,7 +441,7 @@ class WxUI:
     ) -> dict:
         """通过好友申请。dry_run=True 只走到「确定」按钮前面，不真点。
 
-        names 给了就只处理名字里含这些片段的申请（比如 ["YY"]），别的陌生人不动。
+        names 给了就只处理名字里含这些片段的申请（比如 ["张三"]），别的陌生人不动。
         返回 {"seen": [...], "accepted": n, "dry_run": bool}
         """
         seen: list[str] = []

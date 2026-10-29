@@ -1,12 +1,12 @@
 """给「大脑」用的小工具：让小鱼真的能动手操作微信。
 
-用法（在 E:\\wxbot_home 里跑，路径写成绝对路径）：
-    E:\\dsk\\wxbot\\wxctl.cmd accept            同意所有待处理的好友申请
-    E:\\dsk\\wxbot\\wxctl.cmd accept --dry      只看有哪些申请，不动手
-    E:\\dsk\\wxbot\\wxctl.cmd poke 张三          拍一拍某人
-    E:\\dsk\\wxbot\\wxctl.cmd send 张三 你好      给某人/某群发一条文字
-    E:\\dsk\\wxbot\\wxctl.cmd sticker 哈哈       发一个表情（标签先 list 看）
-    E:\\dsk\\wxbot\\wxctl.cmd list               列出表情库标签
+用法（在 <WXBOT_HOME> 里跑，路径写成绝对路径）：
+    <仓库>\\wxctl.cmd accept            同意所有待处理的好友申请
+    <仓库>\\wxctl.cmd accept --dry      只看有哪些申请，不动手
+    <仓库>\\wxctl.cmd poke 张三          拍一拍某人
+    <仓库>\\wxctl.cmd send 张三 你好      给某人/某群发一条文字
+    <仓库>\\wxctl.cmd sticker 哈哈       发一个表情（标签先 list 看）
+    <仓库>\\wxctl.cmd list               列出表情库标签
 
 每次最多干一件事，输出一行 JSON，方便大脑读懂结果。
 """

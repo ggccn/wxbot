@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 
 # 拟人节奏档：natural 的默认间隔 2.5–6 秒已经偏慢（用户 2026-10-22 反馈"太慢"），
-# 这里用环境变量把「两次写动作的间隔」压到 1.2–2.4 秒、突发上限放到 12 次/2 分钟，
+# 这里用环境变量把「两次写动作的间隔」压到 1.2–2.4 秒、突消上限放到 12 次/2 分钟，
 # 仍然保留抖动和曲线鼠标（真正的机器特征是"恒定间隔"，不是"快"）。
 # 想更保守就删掉这两行或改成 calm。
 os.environ.setdefault("WECHATAUTO_RHYTHM", "natural")
@@ -63,8 +63,8 @@ def self_check() -> None:
 
     clean, tags = b.pull_stickers("好[[表情:无语]]")
     assert clean == "好" and tags == ["无语"], "pull_stickers 坏了"
-    clean, acts = b.pull_actions("好[[动作:发消息|YY|在吗]]")
-    assert clean == "好" and acts == [("发消息", "YY", "在吗")], "pull_actions 坏了"
+    clean, acts = b.pull_actions("好[[动作:消消息|ZhangSan|在吗]]")
+    assert clean == "好" and acts == [("消消息", "张三", "在吗")], "pull_actions 坏了"
     for name in ("Bridge", "Msg", "RateLimiter", "split_text", "_with_clock", "_media_path"):
         assert hasattr(b, name), f"bridge.{name} 不见了"
     # 签名也要对得上：踩过一次——run_v4 传了 address_book，Bridge.__init__ 里没这个参数，
@@ -120,7 +120,7 @@ def main() -> int:
     data_dir = ROOT / "data"
     data_dir.mkdir(exist_ok=True)
 
-    # 单实例：两个桥同时在跑会各发一遍，等于主动刷屏（也是风控特征）。
+    # 单实例：两个桥同时在跑会各消一遍，等于主动刷屏（也是风控特征）。
     lock_f = open(data_dir / "bridge.lock", "w")
     try:
         import msvcrt
@@ -158,9 +158,9 @@ def main() -> int:
     from persona import Persona  # 人设：主人用 /人设 改，下一句生效
     from proactive import make_scheduler
 
-    # 定时主动发消息：默认关闭，靠 /定时开关 on 打开，条数和间隔都有硬上限
+    # 定时主动消消息：默认关闭，靠 /定时开关 on 打开，条数和间隔都有硬上限
     def _log_outgoing(who: str, text: str) -> None:
-        """主动发出去的消息也写进消息表（否则她读上下文时看不到自己刚主动说过什么）。"""
+        """主动消出去的消息也写进消息表（否则她读上下文时看不到自己刚主动说过什么）。"""
         try:
             row = store.db.execute(
                 "select wxid from contacts where alias = ? limit 1", (who,)).fetchone()
@@ -179,14 +179,14 @@ def main() -> int:
                 "(room=? or (sender=? and (room is null or room='')))",
                 (key, key)).fetchone()[0]
             if int(n or 0) <= 1:
-                # 发之前一句话都没有：这是第一次跟他说话。
-                # 只发这一条，不追发，以后也不再主动找他（用户 2026-10-27 定）。
+                # 消之前一句话都没有：这是第一次跟他说话。
+                # 只消这一条，不追消，以后也不再主动找他（用户 2026-10-27 定）。
                 _once_add(key, who)
-                log.info("第一次跟「%s」说话（之前没聊过）：只发这一条，不追发", who)
+                log.info("第一次跟「%s」说话（之前没聊过）：只消这一条，不追消", who)
                 return
-            _wait_bump(who, text)   # 甩一次骰子：决定追几条、下一条什么时候发
+            _wait_bump(who, text)   # 甩一次骰子：决定追几条、下一条什么时候消
         except Exception:
-            log.warning("追发记账失败", exc_info=True)
+            log.warning("追消记账失败", exc_info=True)
 
     # ---- 主动找完人没理她：隔一段时间再补一句，总共最多 N 条 ---------------
     # 配置放 data\followup.json（改完当场生效，不用重启）：
@@ -206,7 +206,7 @@ def main() -> int:
         "interval_max_minutes": 73,
     }
 
-    # 追发时的情绪底色（随机挑一个，避免每条都是同一种口气）。
+    # 追消时的情绪底色（随机挑一个，避免每条都是同一种口气）。
     # 用户 2026-10-27 要求「更明显的语气」，所以允许直接问"怎么不回我"这类。
     FOLLOWUP_MOODS = (
         "直接问「怎么不回我」，带点不高兴",
@@ -227,7 +227,7 @@ def main() -> int:
                 if isinstance(raw, dict):
                     conf.update(raw)
         except Exception:
-            log.warning("追发配置读不出来（%s），按默认走", followup_path, exc_info=True)
+            log.warning("追消配置读不出来（%s），按默认走", followup_path, exc_info=True)
         return conf
 
     def _followup_gap(conf: dict) -> float:
@@ -243,7 +243,7 @@ def main() -> int:
         return random.uniform(lo, hi) * 60.0
 
     def _followup_plan(conf: dict) -> int:
-        """发完第一条主动后甩一次骰子，决定还要追几条（0 / 1 / 2…）。"""
+        """消完第一条主动后甩一次骰子，决定还要追几条（0 / 1 / 2…）。"""
         try:
             cap = int(conf.get("max_total") or 3)
         except (TypeError, ValueError):
@@ -261,7 +261,7 @@ def main() -> int:
             weights.append(max(0.0, w))
         total_w = sum(weights)
         if total_w <= 0:
-            return 0            # 配错了就当"不追"，绝不乱发
+            return 0            # 配错了就当"不追"，绝不乱消
         pick = random.random() * total_w
         acc = 0.0
         for i, w in enumerate(weights):
@@ -280,10 +280,10 @@ def main() -> int:
         try:
             wait_path.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
         except Exception:
-            log.warning("追发记录写不进去", exc_info=True)
+            log.warning("追消记录写不进去", exc_info=True)
 
     def _wait_mut(fn):
-        """读-改-写一次（有锁）：监听线程销账和主循环追发不会互相覆盖。"""
+        """读-改-写一次（有锁）：监听线程销账和主循环追消不会互相覆盖。"""
         with _wait_lock:
             d = _wait_load()
             out = fn(d)
@@ -310,7 +310,7 @@ def main() -> int:
         except Exception:
             log.warning("一次性主动记录写不进去", exc_info=True)
 
-    # 这些不是真人：系统号/公众号/群，主动消息一律不发、追发也不追
+    # 这些不是真人：系统号/公众号/群，主动消息一律不消、追消也不追
     _SYS_IDS = {
         "weixin", "filehelper", "fmessage", "medianote", "floatbottle", "qqmail",
         "tmessage", "weibo", "notifymessage", "newsapp", "brandsessionholder",
@@ -335,23 +335,23 @@ def main() -> int:
             return who
 
     def _wait_bump(who: str, text: str) -> None:
-        """第一条主动刚发出去：掷骰子定追几条，并算好下一条的时间。"""
+        """第一条主动刚消出去：掷骰子定追几条，并算好下一条的时间。"""
         conf = _followup_conf()
         if not conf.get("enabled", True):
             return
         _k0 = _wxid_of(who)
         if _is_system(_k0):
-            log.info("主动已发（%s）：系统号，不追", who)
+            log.info("主动已消（%s）：系统号，不追", who)
             return
         try:
             if bridge.chat_muted(_k0):     # bridge 在主流程后面才建好，调用时已存在
-                log.info("主动已发（%s）：这个会话被熔断静音了，不追", who)
+                log.info("主动已消（%s）：这个会话被熔断静音了，不追", who)
                 return
         except NameError:
             pass
         plan = _followup_plan(conf)
         if plan <= 0:
-            log.info("主动已发（%s）：这次不追", who)
+            log.info("主动已消（%s）：这次不追", who)
             return
         now = time.time()
         key = _wxid_of(who)
@@ -360,7 +360,7 @@ def main() -> int:
                "first_text": first, "last_text": first, "texts": [first],
                "next_ts": now + _followup_gap(conf)}
         _wait_mut(lambda d: d.__setitem__(key, ent))
-        log.info("主动已发（%s）：骰子说再追 %s 条，下一条约 %.0f 分钟后",
+        log.info("主动已消（%s）：骰子说再追 %s 条，下一条约 %.0f 分钟后",
                  who, plan, (ent["next_ts"] - now) / 60.0)
 
     def _wait_clear(wxid: str) -> None:
@@ -368,10 +368,10 @@ def main() -> int:
             return
         hit = _wait_mut(lambda d: d.pop(wxid, None) is not None)
         if hit:
-            log.info("对方回话了，追发取消（%s）", wxid)
+            log.info("对方回话了，追消取消（%s）", wxid)
 
     def _on_message(m) -> None:
-        """监听回调：先销掉追发（对方回话），再交给桥。"""
+        """监听回调：先销掉追消（对方回话），再交给桥。"""
         try:
             sender = getattr(m, "sender", "") or ""
             room = getattr(m, "room", "") or ""
@@ -384,10 +384,10 @@ def main() -> int:
         bridge.submit(m)
 
     def _followup_tick() -> None:
-        """到点的追发：对方一直没回、且不在免打扰/静音里，就补一句。
+        """到点的追消：对方一直没回、且不在免打扰/静音里，就补一句。
 
-        生成和发送都在锁外做（模型要几秒，不能卡住对方回话时的销账）；
-        发完再读一次表，如果这期间对方回话了（记录已销），就不再写回去。
+        生成和消送都在锁外做（模型要几秒，不能卡住对方回话时的销账）；
+        消完再读一次表，如果这期间对方回话了（记录已销），就不再写回去。
         """
         conf = _followup_conf()
         if not conf.get("enabled", True):
@@ -422,10 +422,10 @@ def main() -> int:
             except Exception:
                 pass
             who = str(ent.get("who") or key)
-            # 对方刚回话就把记录销了，这里先看一眼，别生成完又发一条
+            # 对方刚回话就把记录销了，这里先看一眼，别生成完又消一条
             if key not in _wait_load():
                 continue
-            # 把已经发过的原话给她看（知道就行，不必硬接），再带点"被晾着"的情绪
+            # 把已经消过的原话给她看（知道就行，不必硬接），再带点"被晾着"的情绪
             texts = [str(t).strip() for t in (ent.get("texts") or []) if str(t).strip()]
             if not texts:
                 texts = [str(ent.get("first_text") or ent.get("last_text") or "").strip()]
@@ -434,8 +434,8 @@ def main() -> int:
             ago = max(1, int((time.time() - float(ent.get("last_ts") or time.time())) / 60))
             left = plan - total + 1          # 连这条一起，还能追几条
             hint = (
-                "这是「追发」。"
-                f"你之前已经主动发过这些话（知道就行，不必硬接）：{hist}。"
+                "这是「追消」。"
+                f"你之前已经主动消过这些话（知道就行，不必硬接）：{hist}。"
                 f"对方一直没回，距你上一条已经 {ago} 分钟。"
                 "现在自然再补一句：顺着说、只说此刻的情绪、或者换个话头都行，不用非接着上一条。"
                 "别重复前面说过的句子，别问「在吗」。"
@@ -450,17 +450,17 @@ def main() -> int:
             try:
                 text = _compose(who, hint=hint)
             except Exception as e:
-                log.warning("追发生成失败（%s）：%r", who, e)
+                log.warning("追消生成失败（%s）：%r", who, e)
                 continue
             if not text:
-                log.warning("追发：模型没给出内容，下个 tick 再试（%s）", who)
+                log.warning("追消：模型没给出内容，下个 tick 再试（%s）", who)
                 continue
             if key not in _wait_load():
-                log.info("对方刚回话，这条追发作废（%s）", who)
+                log.info("对方刚回话，这条追消作废（%s）", who)
                 continue
             ok, why = guard.check_outgoing(text, who)
             if not ok:
-                log.info("追发被内容检查拦下（%s：%s），这条不追了", who, why)
+                log.info("追消被内容检查拦下（%s：%s），这条不追了", who, why)
                 _wait_pop(key)
                 continue
             try:
@@ -470,10 +470,10 @@ def main() -> int:
             try:
                 sent = _send_proactive(who, text)
             except Exception as e:
-                log.warning("追发发送出错（%s）：%r", who, e)
+                log.warning("追消消送出错（%s）：%r", who, e)
                 sent = False
             if not sent:
-                log.warning("追发没发出去（%s），下个 tick 再试", who)
+                log.warning("追消没消出去（%s），下个 tick 再试", who)
                 continue
             _log_outgoing(who, text)
             total += 1
@@ -497,12 +497,12 @@ def main() -> int:
                 return True
 
             if _wait_mut(_apply):
-                log.info("追发 %s/%s 已发 → %s：%s", total, plan + 1, who, text[:60])
+                log.info("追消 %s/%s 已消 → %s：%s", total, plan + 1, who, text[:60])
             else:
-                log.info("对方刚回话，这条追发作废（%s）", who)
+                log.info("对方刚回话，这条追消作废（%s）", who)
 
     def _send_proactive(who: str, text: str) -> bool:
-        """主动消息的收件人常是备注名/昵称，先换成 wxid 再发，否则会被"避免发错人"挡住。"""
+        """主动消息的收件人常是备注名/昵称，先换成 wxid 再消，否则会被"避免消错人"挡住。"""
         target = who
         try:
             row = store.db.execute(
@@ -515,7 +515,7 @@ def main() -> int:
             pass
         ok = adapter.send(target, text)
         if not ok:
-            log.warning("随机主动没发出去（收件人 %s -> %s）", who, target)
+            log.warning("随机主动没消出去（收件人 %s -> %s）", who, target)
         return bool(ok)
 
     scheduler = make_scheduler(str(data_dir), guard=guard,
@@ -540,7 +540,7 @@ def main() -> int:
     log.info("人设：%s", "已设置" if bridge.persona.text() else "默认（AGENTS.md）")
     log.info("表情库：%s 个标签", len(sticker_lib.tags()))
     _bh = bridge._behavior_conf()
-    log.info("连发：%s（拆开概率 %s，最多 %s 条）；自动表情：%s 概率 %s，标签 %s",
+    log.info("连消：%s（拆开概率 %s，最多 %s 条）；自动表情：%s 概率 %s，标签 %s",
              "开" if _bh.get("bubbles_enabled") else "关",
              _bh.get("bubble_chance"), _bh.get("bubble_max"),
              "开" if float(_bh.get("auto_sticker_chance") or 0) > 0 else "关",
@@ -567,7 +567,7 @@ def main() -> int:
     SPONT_ACTS = ("表情", "存表情", "记笔记")
 
     def _compose(name: str, hint: str = "") -> str:
-        """让模型凭记忆给她挑个人主动说一句（随机主动/手动触发/追发共用）。
+        """让模型凭记忆给她挑个人主动说一句（随机主动/手动触消/追消共用）。
 
         提示词跟私聊回复用同一套上下文（人设+笔记+最近 50 条+表情库+梗库），
         这样对熟人能接上真实话题，对陌生人也不会装作认识人家很久。
@@ -605,8 +605,8 @@ def main() -> int:
             log.warning("主动开场拼上下文失败，退回极简提示", exc_info=True)
             prompt = ctx
         reply, _ = brain.ask(prompt, session_id=None)
-        # 主动发消息没有走 bridge 的解析链，这里必须自己洗干净，
-        # 否则标记会原样发到对方手机上（2026-10-24 19:27 发给 YY 的那条就带着）。
+        # 主动消消息没有走 bridge 的解析链，这里必须自己洗干净，
+        # 否则标记会原样消到对方手机上（2026-10-24 19:27 消给朋友的那条就带着）。
         try:
             reply, _acts = b.pull_actions(reply)
         except Exception:
@@ -636,12 +636,12 @@ def main() -> int:
             return
         try:
             if not _send_proactive(who, text):
-                log.warning("手动主动没发出去（%s）：%s", who, text[:40])
+                log.warning("手动主动没消出去（%s）：%s", who, text[:40])
                 return
             _record_proactive(who, text)
             log.info("手动主动：%s → %s", who, text[:60])
         except Exception as e:
-            log.warning("手动主动发送出错（%s）：%r", who, e)
+            log.warning("手动主动消送出错（%s）：%r", who, e)
 
 
 
@@ -707,13 +707,13 @@ def main() -> int:
             except Exception as e:
                 log.warning("读面板配置失败：%r", e)
 
-        # 追发：主动发完对方没回应，按 17–73 分钟随机间隔再补，最多补到 max_total 条
+        # 追消：主动消完对方没回应，按 17–73 分钟随机间隔再补，最多补到 max_total 条
         if time.time() - last_follow > 30:
             last_follow = time.time()
             try:
                 _followup_tick()
             except Exception as e:
-                log.warning("追发出错：%r", e)
+                log.warning("追消出错：%r", e)
 
         # 随机主动：每 5 分钟掷一次骰子（真实概率在 data/proactive.json 的 random 段）
         if time.time() - last_rand > 300:
@@ -730,13 +730,13 @@ def main() -> int:
                             and not (bridge.chat_muted(w) if bridge else False)]
                 except Exception:
                     pool = []
-                if not bridge.muted_now():  # 静音时不主动发（一样会抢前台）
+                if not bridge.muted_now():  # 静音时不主动消（一样会抢前台）
                     for note in scheduler.random_tick(compose=_compose, target_pool=pool):
                         log.info("随机主动：%s", note)
             except Exception as e:
                 log.warning("随机主动出错：%r", e)
 
-        # 手动触发主动：面板按钮或微信里 `/主动 张三`（不带内容）会写这个请求文件
+        # 手动触消主动：面板按钮或微信里 `/主动 张三`（不带内容）会写这个请求文件
         try:
             req = data_dir / "proactive_now.json"
             if req.exists() and req.stat().st_mtime > last_now_req:
@@ -779,7 +779,7 @@ def main() -> int:
 
         if time.time() - last_check > 60:
             last_check = time.time()
-            # 先看看微信是不是还活着（卡死/被踢/窗口没了都会让发送卡 75 秒）
+            # 先看看微信是不是还活着（卡死/被踢/窗口没了都会让消送卡 75 秒）
             try:
                 if bridge.muted_now():
                     # /停 = 完全静默：不碰微信窗口，也不拉起客户端。以前这里照样跑

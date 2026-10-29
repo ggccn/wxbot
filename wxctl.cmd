@@ -1,4 +1,9 @@
-@echo off
-setlocal
-set PYTHONIOENCODING=utf-8
-"E:\dsk\wxbot\.venv\Scripts\python.exe" "E:\dsk\wxbot\wxctl.py" %*
+@echo off
+setlocal
+set PYTHONIOENCODING=utf-8
+set HERE=%~dp0
+if exist "%HERE%.venv\Scripts\python.exe" (
+  "%HERE%.venv\Scripts\python.exe" "%HERE%wxctl.py" %*
+) else (
+  python "%HERE%wxctl.py" %*
+)
